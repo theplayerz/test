@@ -1,0 +1,22 @@
+## 미니 Todo CLI 앱 만들기
+
+다음 요구사항을 충족하는 Todo CLI 앱을 만들어주세요.
+
+### 기능 요구사항
+- `todo add "할 일 내용"` : 새 할 일 추가
+- `todo list` : 모든 할 일 목록 출력 (완료/미완료 상태 표시)
+- `todo done <id>` : 특정 할 일을 완료 처리
+- `todo delete <id>` : 특정 할 일 삭제
+- `todo reset` : 모든 할 일 삭제
+
+### 기술 요구사항
+- 언어: Python
+- 저장: JSON 파일 (todos.json)
+- 외부 패키지 의존성 없음 (표준 라이브러리만 사용)
+- 실행 가능한 스크립트 (python todo.py가 아닌 ./todo로 실행 가능)
+- Windows/macOS/Linux 호환
+
+### 코드 규칙
+- 함수마다 타입 힌트 사용
+- 주요 함수에 docstring 작성
+- 오류 상황 (파일 없음, 잘못된 ID 등)을 graceful하게 처리
