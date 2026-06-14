@@ -12,11 +12,22 @@ import re
 import time
 import shutil
 import os
+from dotenv import load_dotenv
+
+# =========================
+# ENV 로드
+# =========================
+
+load_dotenv()
+
+TOKEN = os.getenv("TELEGRAM_TOKEN")
+
+if not TOKEN:
+    raise ValueError("TELEGRAM_TOKEN 환경변수가 설정되지 않았습니다.")
 
 # =========================
 # 설정
 # =========================
-TOKEN = "8973869827:AAH-54-NSwvKO3o_e59wpR0CKaFaCd82AkY"
 ALLOWED_CHAT_ID = 8376884340
 WORK_DIR = r"C:\dev"
 GIT_EXE = shutil.which("git")
@@ -37,7 +48,7 @@ def clean_output(text):
         '',
         text
     )
-
+    
     return text.strip()
 
 
@@ -290,7 +301,6 @@ def main():
     print("===================================")
 
     app.run_polling()
-
 
 if __name__ == "__main__":
     main()
