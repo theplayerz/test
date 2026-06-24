@@ -20,3 +20,29 @@
 - **출력 (Return):** 최종 응답은 반드시 `{"aiu_output": "생성된 텍스트 답변"}` 형태의 딕셔너리로 파싱해서 반환해야 함.
 
 코드 전체에 각 단계가 어떤 MLOps 파이프라인 역할을 하는지, 특히 ModelWrapper가 어떤 역할을 하는지 한글 주석을 매우 상세하게 달아줘.
+
+‐----------------------
+
+
+너는 MLOps 및 LangChain 전문가야. 
+전통적인 머신러닝 가중치 파일이 없는 LLM 에이전트 애플리케이션을 MLflow에 서빙하기 위해, 파이썬 클래스 로직 자체를 모델로 취급하는 Custom PyFunc Model(`mlflow.pyfunc.PythonModel`) 코드를 작성해 줘.
+
+코드는 등록을 담당하는 `agent.py`와 실제 모델 서빙 및 추론을 담당하는 `custom_server.py`로 나누어 작성하거나, 하나의 파일에 깔끔하게 모듈화해서 보여줘. 
+
+다음 [작동 순서]와 [입출력 계약]을 반드시 엄격하게 지켜야 해.
+
+**[핵심 요구사항: 가중치 없는 로직 래퍼]**
+이 모델은 `.pkl`이나 `.pt` 같은 가중치 파일이 없어. 대신 외부 LLM API 호출, 도구(Tools) 실행, 프롬프트 조합 등의 파이프라인을 관장하는 '비서의 업무 매뉴얼(코드)'을 모델로 등록하는 구조야. 이 점을 염두에 두고 클래스와 주석을 작성해.
+
+**[작동 순서 요구사항]**
+1. **설정 아티팩트 생성:** `agent.py`의 `register_agent()` 함수 내에서 `ENABLED_ASSETS`, `ASSTE_COMN`, `LLM_COMN` 더미 딕셔너리를 만들고, 이를 `conn.json` 파일로 로컬에 저장해.
+2. **모델 로깅 (Log Model):** `mlflow.pyfunc.log_model`을 사용하여 Custom Model Wrapper 클래스를 로깅해. 이때 앞서 만든 `conn.json`을 `artifacts` 파라미터로 매핑해서 함께 패키징해줘.
+3. **컨텍스트 로드 (Load Context):** `custom_server.py`에 `mlflow.pyfunc.PythonModel`을 상속받은 `AgentModelWrapper` 클래스를 만들어. 이 클래스의 `load_context(self, context)` 메서드에서 아티팩트로 넘어온 `conn.json`을 읽고, 에이전트 구동에 필요한 에셋(LLM, Tools 등)들을 1회성으로 초기화(Build)하는 로직의 뼈대를 작성해.
+4. **추론 (Predict 및 _run):** `predict(self, context, model_input)` 메서드를 구현해. 이 안에서 내부의 `_run()` 메서드를 호출하여 켜진 에셋들을 순서대로 실행하는 구조를 잡아줘.
+5. **추적 (Tracing):** Langchain autologging(`mlflow.langchain.autolog()`) 설정이나 세션/트레이스를 기록하는 주석 및 로직을 포함해 줘.
+
+**[입출력 계약 (Contract) 요구사항]**
+- **입력 (model_input):** DataFrame 또는 Dict 형태. 내부 데이터는 `{"input": [{"query": "...", "system_message": "...", "llm_api_key": "...", "session_id": "..."}], "trace_id": "..."}` 구조를 가짐.
+- **출력 (Return):** 최종 응답은 반드시 `{"aiu_output": "생성된 텍스트 답변"}` 형태의 딕셔너리로 파싱해서 반환해야 함.
+
+코드 전체에 각 단계가 어떤 MLOps 파이프라인 역할을 하는지, 특히 ModelWrapper가 어떤 역할을 하는지 한글 주석을 매우 상세하게 달아줘.
